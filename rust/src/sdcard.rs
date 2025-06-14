@@ -33,19 +33,21 @@ where
 
     let mut load_file_errors = heapless::Vec::new();
 
-    let mut config_buf = [0u8; 1024];
-    let ans = load_file_into_slice(&mut volume_mgr, root_dir, "CONFIG~1.TOM", &mut config_buf);
-    if let Err(e) = ans {
-        let _ = load_file_errors.push(e);
-    }
-    *config = crate::config::parse_config(&config_buf).map_err(|e| SdCardError::ParseConfig(e))?;
+    // let mut config_buf = [0u8; 1024];
+    // let ans = load_file_into_slice(&mut volume_mgr, root_dir, "CONFIG~1.TOM", &mut config_buf);
+    // if let Err(e) = ans {
+    //     let _ = load_file_errors.push(e);
+    // }
+    // *config = crate::config::parse_config(&config_buf).map_err(|e| SdCardError::ParseConfig(e))?;
 
+    println!("qwq");
     // Must load at least one firmware, or defaults to rustsbi.bin
     let firmware_path = config.firmware.as_deref().unwrap_or("rustsbi.bin");
     let ans = load_file_into_slice(&mut volume_mgr, root_dir, firmware_path, firmware_dst);
     if let Err(e) = ans {
         let _ = load_file_errors.push(e);
     }
+    println!("qvq");
 
     if let Some(opaque_path) = config.opaque.as_deref() {
         let ans = load_file_into_slice(&mut volume_mgr, root_dir, opaque_path, opaque_dst);

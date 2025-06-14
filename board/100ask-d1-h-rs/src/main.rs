@@ -91,7 +91,7 @@ fn main(p: Peripherals, c: Clocks) {
     println!("SD card initialized, size: {:.2}GB", size_gb);
 
     let opaque_dst = unsafe { from_raw_parts_mut(0x4100_8000 as *mut u8, 64 * 1024) };
-    let firmware_dst = unsafe { from_raw_parts_mut(0x4100_0000 as *mut u8, 32 * 1024) };
+    let firmware_dst = unsafe { from_raw_parts_mut(0x4100_0000 as *mut u8, 512 * 1024 * 1024) };
     let next_stage_dst = unsafe { from_raw_parts_mut(0x4180_0000 as *mut u8, 512 * 1024 * 1024) };
     let ans = load_from_sdcard(
         sdcard,
@@ -134,7 +134,7 @@ static mut DYNAMIC_INFO: DynamicInfo = DynamicInfo::new();
 
 /// Executes the loaded payload
 fn run_payload(config: &Config) -> ! {
-    const IMAGE_ADDRESS: usize = 0x4180_0000; // Load address of Linux Image
+    const IMAGE_ADDRESS: usize = 0x4100_0000; // Load address of Linux Image
     const DTB_ADDRESS: usize = 0x4100_8000; // Address of the device tree blob
     const HART_ID: usize = 0; // Hartid of the current core
     unsafe {
