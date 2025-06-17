@@ -8,5 +8,5 @@ members = [
 ]
 
 [patch.crates-io]
-allwinner-hal = { git = "https://github.com/rustsbi/allwinner-hal", rev = "aa6ec965" }
-allwinner-rt = { git = "https://github.com/rustsbi/allwinner-hal", rev = "aa6ec965" }
+allwinner-hal = { git = "https://github.com/woshiluo/allwinner-hal", branch = "test/d1" }
+allwinner-rt = { git = "https://github.com/woshiluo/allwinner-hal", branch = "test/d1" }
