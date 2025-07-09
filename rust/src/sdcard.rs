@@ -3,6 +3,15 @@ use embedded_sdmmc::{BlockDevice, TimeSource, VolumeManager};
 
 const MAX_LOAD_FILES: usize = 5;
 
+pub fn get_time() -> usize {
+    let time;
+    unsafe {
+        use core::arch::asm;
+        asm!("csrr {time}, time", time = out(reg) time);
+    }
+    time
+}
+
 pub enum SdCardError<E: core::fmt::Debug> {
     OpenVolume(embedded_sdmmc::Error<E>),
     OpenRootDir(embedded_sdmmc::Error<E>),
@@ -42,12 +51,15 @@ where
 
     println!("qwq");
     // Must load at least one firmware, or defaults to rustsbi.bin
+    let start_time = get_time();
     let firmware_path = config.firmware.as_deref().unwrap_or("rustsbi.bin");
     let ans = load_file_into_slice(&mut volume_mgr, root_dir, firmware_path, firmware_dst);
     if let Err(e) = ans {
         let _ = load_file_errors.push(e);
     }
-    println!("qvq");
+    let end_time = get_time();
+    // println!("qvq");
+    println!("qvq, {}", end_time - start_time);
 
     if let Some(opaque_path) = config.opaque.as_deref() {
         let ans = load_file_into_slice(&mut volume_mgr, root_dir, opaque_path, opaque_dst);

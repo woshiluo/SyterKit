@@ -14,12 +14,13 @@ dependencies = [
 [[package]]
 name = "allwinner-hal"
 version = "0.0.0"
-source = "git+https://github.com/woshiluo/allwinner-hal?branch=test%2Fd1#d643d5ea3436c0ad08ea80e9f510dd2959d9fe50"
+source = "git+https://github.com/woshiluo/allwinner-hal?branch=test%2Fd1#539b0f0b576bfc8c33e4288ce0ec6877aaacb29d"
 dependencies = [
  "embedded-hal",
  "embedded-io",
  "embedded-sdmmc",
  "embedded-time",
+ "log",
  "plic",
  "uart16550",
  "volatile-register",
@@ -28,7 +29,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt"
 version = "0.0.0"
-source = "git+https://github.com/woshiluo/allwinner-hal?branch=test%2Fd1#d643d5ea3436c0ad08ea80e9f510dd2959d9fe50"
+source = "git+https://github.com/woshiluo/allwinner-hal?branch=test%2Fd1#539b0f0b576bfc8c33e4288ce0ec6877aaacb29d"
 dependencies = [
  "allwinner-hal",
  "allwinner-rt-macros",
@@ -41,7 +42,7 @@ dependencies = [
 [[package]]
 name = "allwinner-rt-macros"
 version = "0.0.0"
-source = "git+https://github.com/woshiluo/allwinner-hal?branch=test%2Fd1#d643d5ea3436c0ad08ea80e9f510dd2959d9fe50"
+source = "git+https://github.com/woshiluo/allwinner-hal?branch=test%2Fd1#539b0f0b576bfc8c33e4288ce0ec6877aaacb29d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -777,6 +778,7 @@ dependencies = [
  "embedded-hal",
  "embedded-io",
  "embedded-time",
+ "log",
  "num-traits",
  "panic-halt",
  "riscv",

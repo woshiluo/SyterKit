@@ -217,7 +217,7 @@ fn xtask_burn_d1_flash_bt0(xfel: &str, flash: FlashType, env: &Env, bin: &Option
     command.current_dir(dist_dir(env));
     match flash {
         FlashType::Nand => command.arg("spinand"),
-        FlashType::Nor => command.arg("spinor"),
+        FlashType::Nor => command.arg("spinand"),
     };
     command.args(["write", "0"]);
     if let Some(bin) = bin {

@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 naked-function = "0.1.5"
-allwinner-hal = "0.0.0"
-allwinner-rt = "0.0.0"
+allwinner-hal = { version = "0.0.0", features = [ "d1" ] }
+allwinner-rt = { version = "0.0.0", features = [ "d1" ] }
 embedded-hal = "1.0.0"
 embedded-io = "0.6.1"
 spin = "0.9"

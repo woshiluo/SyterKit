@@ -14,6 +14,8 @@ use syterkit::{
     DynamicInfo, Peripherals, SdCardError, Stdout,
 };
 
+mod logger;
+
 #[derive(Command)]
 enum Base<'a> {
     /// Get/set bootargs for kernel.
