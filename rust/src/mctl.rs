@@ -34,6 +34,9 @@ pub const RAM_BASE: usize = 0x40000000;
 const SYS_CFG: usize = 0x0300_0000; // 0x0300_0000 - 0x0300_0FFF
                                     // const VER_REG: usize = SYS_CFG + 0x0024;
                                     // const EMAC_EPHY_CLK_REG0: usize = SYS_CFG + 0x0030;
+
+const SYS_SID_BASE: usize = 0x0300_6000;
+const SYS_LDOB_SID: usize = 0x21c;
 const SYS_LDO_CTRL_REG: usize = SYS_CFG + 0x0150;
 const RES_CAL_CTRL_REG: usize = SYS_CFG + 0x0160;
 const RES240_CTRL_REG: usize = SYS_CFG + 0x0168;
@@ -244,12 +247,18 @@ fn writel(reg: usize, val: u32) {
     }
 }
 
-fn sdelay(micros: usize) {
-    let millis = micros * 1000;
+fn get_arch_counter() -> usize {
+    let count: usize;
     unsafe {
-        for _ in 0..millis {
-            core::arch::asm!("nop")
-        }
+        core::arch::asm!( "csrr {}, time", out(reg) count);
+    }
+    count
+}
+
+fn sdelay(micros: usize) {
+    let now = get_arch_counter();
+    while get_arch_counter() - now < micros {
+        core::hint::spin_loop();
     }
 }
 
@@ -350,7 +359,31 @@ unsafe fn mctl_phy_ac_remapping(para: &mut dram_parameters) {
     }
 }
 
+fn sid_read_ldoB_cal(dram_para: &mut dram_parameters) {
+    let mut result = (readl(SYS_SID_BASE + SYS_LDOB_SID) & 0xff00) >> 8;
+
+    if result == 0 {
+        return;
+    }
+
+    match dram_para.dram_type {
+        DramType::Ddr2 => {}
+        DramType::Ddr3 => {
+            if result > 0x20 {
+                result -= 0x16;
+            }
+        }
+        _ => {
+            result = 0;
+        }
+    }
+
+    let result2 = (readl(SYS_LDO_CTRL_REG) & !0xff00) | (result << 8);
+    writel(SYS_LDO_CTRL_REG, result2);
+}
+
 fn dram_vol_set(dram_para: &mut dram_parameters) {
+    println!("here is dram_vol_set");
     let vol = match dram_para.dram_type {
         DramType::Ddr2 => 47, // 1.8V
         DramType::Ddr3 => 25, // 1.5V
@@ -362,6 +395,7 @@ fn dram_vol_set(dram_para: &mut dram_parameters) {
     reg &= !(0x200000);
     writel(SYS_LDO_CTRL_REG, reg);
     sdelay(1);
+    sid_read_ldoB_cal(dram_para);
 }
 
 fn set_ddr_voltage(val: usize) -> usize {
@@ -1772,10 +1806,10 @@ pub fn init_dram(para: &mut dram_parameters, ccu: &CCU, phy: &PHY) -> usize {
         writel(RES240_CTRL_REG, 0);
         sdelay(10);
     } else {
-        writel(ANALOG_SYS_PWROFF_GATING_REG, 0); // 0x7010000 + 0x254; l 9655
         writel(RES_CAL_CTRL_REG, readl(RES_CAL_CTRL_REG) & !0x003);
+        writel(ANALOG_SYS_PWROFF_GATING_REG, para.dram_tpr13 & (1 << 16)); // 0x7010000 + 0x254; l 9655
         sdelay(10);
-        writel(RES_CAL_CTRL_REG, readl(RES_CAL_CTRL_REG) & !0x108);
+        writel(RES_CAL_CTRL_REG, (readl(RES_CAL_CTRL_REG) & !0x108) | 0x001);
         sdelay(10);
         writel(RES_CAL_CTRL_REG, readl(RES_CAL_CTRL_REG) | 0x001);
         sdelay(20);
@@ -1786,20 +1820,7 @@ pub fn init_dram(para: &mut dram_parameters, ccu: &CCU, phy: &PHY) -> usize {
     }
 
     // Set voltage
-    let rc = get_pmu_exists();
-    if VERBOSE {
-        // println!("PMU exists? {}", rc);
-    }
-
-    if !rc {
-        dram_vol_set(para);
-    } else {
-        if para.dram_type == DramType::Ddr2 {
-            set_ddr_voltage(1800);
-        } else if para.dram_type == DramType::Ddr3 {
-            set_ddr_voltage(1500);
-        }
-    }
+    dram_vol_set(para);
 
     // STEP 2: CONFIG
     // Set SDRAM controller auto config
@@ -1922,51 +1943,17 @@ pub fn init_dram(para: &mut dram_parameters, ccu: &CCU, phy: &PHY) -> usize {
     mem_size as usize
 }
 
+extern "C" {
+    fn sunxi_dram_init_2() -> u32;
+}
+
 pub fn init(ccu: &CCU, phy: &PHY) -> usize {
     // taken from SPL
-    #[rustfmt::skip]
-    let mut dram_para: dram_parameters = dram_parameters {
-        dram_clk:            792,
-        dram_type:   DramType::Ddr3,
-        dram_zq:     0x007b_7bfb,
-        dram_odt_en: 0x0000_0001,
-        #[cfg(feature="nezha")]
-        dram_para1:  0x0000_10f2,
-        #[cfg(feature="lichee")]
-        dram_para1:  0x0000_10d2,
-        dram_para2:  0x0000_0000,
-        dram_mr0:    0x0000_1c70,
-        dram_mr1:    0x0000_0042,
-        #[cfg(feature="nezha")]
-        dram_mr2:    0x0000_0000,
-        #[cfg(feature="lichee")]
-        dram_mr2:    0x0000_0018,
-        dram_mr3:    0x0000_0000,
-        dram_tpr0:   0x004a_2195,
-        dram_tpr1:   0x0242_3190,
-        dram_tpr2:   0x0008_b061,
-        dram_tpr3:   0xb478_7896,
-        dram_tpr4:   0x0000_0000,
-        dram_tpr5:   0x4848_4848,
-        dram_tpr6:   0x0000_0048,
-        dram_tpr7:   0x1620_121e,
-        dram_tpr8:   0x0000_0000,
-        dram_tpr9:   0x0000_0000,
-        dram_tpr10:  0x0000_0000,
-        #[cfg(feature="nezha")]
-        dram_tpr11:  0x0076_0000,
-        #[cfg(feature="lichee")]
-        dram_tpr11:  0x0087_0000,
-        #[cfg(feature="nezha")]
-        dram_tpr12:  0x0000_0035,
-        #[cfg(feature="lichee")]
-        dram_tpr12:  0x0000_0024,
-        #[cfg(feature="nezha")]
-        dram_tpr13:  0x3405_0101,
-        #[cfg(feature="lichee")]
-        dram_tpr13:  0x3405_0100,
-    };
 
+    println!("init_2 start");
+    unsafe {
+        return sunxi_dram_init_2() as usize;
+    }
     // // println!("DRAM INIT");
-    return init_dram(&mut dram_para, &ccu, &phy);
+    // return init_dram(&mut dram_para, &ccu, &phy);
 }

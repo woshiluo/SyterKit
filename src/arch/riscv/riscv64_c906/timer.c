@@ -17,42 +17,42 @@ void set_timer_count() {
     init_timestamp = (uint32_t) time_us();
 }
 
-/*
- * 64bit arch timer.CNTPCT
- * Freq = 24000000Hz
- */
-uint64_t get_arch_counter(void) {
-    uint64_t cnt = 0;
+// /*
+//  * 64bit arch timer.CNTPCT
+//  * Freq = 24000000Hz
+//  */
+// uint64_t get_arch_counter(void) {
+//     uint64_t cnt = 0;
 
-    asm volatile("csrr %0, time\n"
-                 : "=r"(cnt)
-                 :
-                 : "memory");
+//     asm volatile("csrr %0, time\n"
+//                  : "=r"(cnt)
+//                  :
+//                  : "memory");
 
-    return cnt;
-}
+//     return cnt;
+// }
 
-/*
- * get current time.(millisecond)
- */
-uint32_t time_ms(void) {
-    return get_arch_counter() / 24000;
-}
+// /*
+//  * get current time.(millisecond)
+//  */
+// uint32_t time_ms(void) {
+//     return get_arch_counter() / 24000;
+// }
 
-/*
- * get current time.(microsecond)
- */
-uint64_t time_us(void) {
-    return get_arch_counter() / (uint64_t) 24;
-}
+// /*
+//  * get current time.(microsecond)
+//  */
+// uint64_t time_us(void) {
+//     return get_arch_counter() / (uint64_t) 24;
+// }
 
-void udelay(uint64_t us) {
-    uint64_t now;
+// void udelay(uint64_t us) {
+//     uint64_t now;
 
-    now = time_us();
-    while (time_us() - now < us) {
-    };
-}
+//     now = time_us();
+//     while (time_us() - now < us) {
+//     };
+// }
 
 void mdelay(uint32_t ms) {
     udelay(ms * 1000);

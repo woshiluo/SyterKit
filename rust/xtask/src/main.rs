@@ -84,7 +84,7 @@ fn main() {
     }
 }
 
-const DEFAULT_TARGET: &'static str = "riscv64imac-unknown-none-elf";
+const DEFAULT_TARGET: &'static str = "riscv64gc-unknown-none-elf";
 
 fn xtask_build_d1_flash_bt0(env: &Env, bin: &Option<String>) {
     trace!("build D1 flash bt0");
@@ -94,6 +94,7 @@ fn xtask_build_d1_flash_bt0(env: &Env, bin: &Option<String>) {
     command.current_dir(project_root());
     trace!("cargo current dir: {:?}", project_root());
     command.arg("build");
+    command.arg("--verbose");
     command.arg("-p");
     command.arg("syterkit-100ask-d1-h");
     if env.release {

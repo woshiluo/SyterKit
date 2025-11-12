@@ -4,7 +4,7 @@ cargo-features = ["per-package-target"]
 name = "syterkit-100ask-d1-h"
 version = "0.0.0"
 edition = "2021"
-default-target = "riscv64imac-unknown-none-elf"
+default-target = "riscv64gc-unknown-none-elf"
 
 [dependencies]
 embedded-hal = "1.0.0"

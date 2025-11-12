@@ -102,7 +102,7 @@ vectors:
 	csrrw t0, mscratch, x0
 	csrr s0, mstatus
 	csrr t1, mepc
-	csrr t2, mbadaddr
+	csrr t2, mtval 
 	csrr t3, mcause
 	SREG t0, 2 * REGSZ(x2)
 	SREG s0, 32 * REGSZ(x2)

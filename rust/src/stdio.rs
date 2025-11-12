@@ -93,7 +93,7 @@ pub fn set_logger_stdout() {
     static STDOUT_LOGGER: StdoutLogger = StdoutLogger;
     log::set_logger(&STDOUT_LOGGER).ok();
     // TODO: make it configurable in environment variable
-    log::set_max_level(log::LevelFilter::max());
+    log::set_max_level(log::LevelFilter::Info);
 }
 
 /// A handle to the standard input stream of a runtime.

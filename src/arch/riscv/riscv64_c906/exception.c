@@ -304,7 +304,7 @@ static int fetch_32bit_instruction(unsigned long vaddr, unsigned long *insn) {
 }
 
 static void redirect_trap(void) {
-    csr_write(sbadaddr, csr_read(mbadaddr));
+    csr_write(stval, csr_read(mtval));
     csr_write(sepc, csr_read(mepc));
     csr_write(scause, csr_read(mcause));
     csr_write(mepc, csr_read(stvec));

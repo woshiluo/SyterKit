@@ -26,7 +26,7 @@ pub fn show_banner() {
     println!("      |___|                        ");
     println!("***********************************");
     println!(
-        " syterkit v{} Commit: {}",
+        " syterkit v{} Commit: {} h",
         env!("CARGO_PKG_VERSION"),
         env!("SYTERKIT_GIT_HASH")
     );

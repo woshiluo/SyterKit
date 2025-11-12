@@ -53,12 +53,12 @@ where
     // Must load at least one firmware, or defaults to rustsbi.bin
     let start_time = get_time();
     let firmware_path = config.firmware.as_deref().unwrap_or("rustsbi.bin");
+    println!("qwq2");
     let ans = load_file_into_slice(&mut volume_mgr, root_dir, firmware_path, firmware_dst);
     if let Err(e) = ans {
         let _ = load_file_errors.push(e);
     }
     let end_time = get_time();
-    // println!("qvq");
     println!("qvq, {}", end_time - start_time);
 
     if let Some(opaque_path) = config.opaque.as_deref() {
@@ -94,8 +94,10 @@ fn load_file_into_slice<D: BlockDevice, T: TimeSource>(
     target: &mut [u8],
 ) -> Result<usize, embedded_sdmmc::Error<D::Error>> {
     // Find and open the file
+    println!("load vol");
     volume_mgr.find_directory_entry(dir, file_name)?;
 
+    println!("open dir");
     let file = volume_mgr.open_file_in_dir(dir, file_name, embedded_sdmmc::Mode::ReadOnly)?;
 
     // Check file size
@@ -104,6 +106,7 @@ fn load_file_into_slice<D: BlockDevice, T: TimeSource>(
         return Err(embedded_sdmmc::Error::NotEnoughSpace);
     }
 
+    println!("read");
     // Read file content into memory
     let size = volume_mgr.read(file, target)?;
 

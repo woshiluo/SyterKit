@@ -57,6 +57,17 @@ fn main(p: Peripherals, c: Clocks) {
     // Display the bootloader banner.
     show_banner();
 
+    unsafe {
+        core::arch::asm!(
+            "
+    li t0, 0x4000 // bit 14 is FS most significant bit
+    li t2, 0x2000 // bit 13 is FS least significant bit",
+            "csrrc x0, mstatus, t0",
+            "csrrs x0, mstatus, t2",
+            "fscsr x0"
+        );
+    }
+
     // Initialize the DRAM.
     let dram_size = syterkit::mctl::init(&p.ccu, &p.phy);
     println!("DRAM size: {}M 🐏", dram_size);
@@ -80,6 +91,20 @@ fn main(p: Peripherals, c: Clocks) {
     let smhc = Smhc::new::<0>(&p.smhc0, pads, &c, &p.ccu);
     let mut d = Device { smhc };
     let mut config = Config::default();
+    unsafe {
+        core::arch::asm!(
+            "
+            li t0, 0x70013
+            csrw 0x7c2, t0
+            li t0, 0x11ff
+            csrw 0x7c1, t0
+            li t0, 0x638000
+            csrs 0x7c0, t0
+            li t0, 0x16e30c
+            csrw 0x7c5, t0
+            "
+        );
+    }
 
     println!("initializing SD card...");
     let sdcard = match SdCard::new(&mut d.smhc) {
@@ -89,7 +114,9 @@ fn main(p: Peripherals, c: Clocks) {
             run_cli(&mut d, &mut config);
         }
     };
+    println!("after sd");
     let size_gb = sdcard.get_size_kb() / 1024.0 / 1024.0;
+    println!("after get_size_kb");
     println!("SD card initialized, size: {:.2}GB", size_gb);
 
     let opaque_dst = unsafe { from_raw_parts_mut(0x4100_8000 as *mut u8, 64 * 1024) };

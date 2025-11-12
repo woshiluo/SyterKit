@@ -32,4 +32,6 @@ during compilation, git must be found, as it is used to generate the git hash ve
         "cargo:rustc-env=SYTERKIT_RUSTC_VERSION={}",
         syterkit_rustc_version
     );
+    println!("cargo:rustc-link-search=/work/rustsbi/SyterKit/build/src/drivers/chips/sun20iw1/CMakeFiles/chip_drivers-obj.dir/");
+    println!("cargo:rustc-link-arg=sys-dram.c.o");
 }
